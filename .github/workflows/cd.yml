@@ -38,8 +38,11 @@ jobs:
           client_id = ${{ secrets.DATABRICKS_CLIENT_ID }}
           client_secret = ${{ secrets.DATABRICKS_CLIENT_SECRET }}
           EOF
-          # THIS LINE WILL PRINT THE FILE CONTENTS TO THE LOG
+          echo "--- Content of ~/.databrickscfg ---"
+          # 💡 This command will show what was actually written to the file.
+          # Secrets will be redacted (replaced by ***) in the log.
           cat ~/.databrickscfg
+          echo "-----------------------------------"
 
       - name: Install uv
         uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 #v5.4.1
