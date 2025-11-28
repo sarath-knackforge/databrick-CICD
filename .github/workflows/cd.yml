@@ -38,6 +38,7 @@ jobs:
           client_id = ${{ secrets.DATABRICKS_CLIENT_ID }}
           client_secret = ${{ secrets.DATABRICKS_CLIENT_SECRET }}
           EOF
+          # THIS LINE WILL PRINT THE FILE CONTENTS TO THE LOG
           cat ~/.databrickscfg
 
       - name: Install uv
