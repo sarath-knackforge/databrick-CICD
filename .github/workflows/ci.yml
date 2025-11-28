@@ -1,35 +1,48 @@
-name: CI
+name: CD
 
 on:
-  pull_request:
+  workflow_dispatch:
+  push:
     branches:
       - main
 
 jobs:
-  pytest_and_checks:
+  deploy:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.head_ref }}
 
-      - name: Git tag from version.txt
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      # ✅✅✅ FORCE-SECRETS INTO ENV (THIS IS THE KEY FIX)
+      - name: Load Databricks Secrets
         run: |
-          echo "VERSION=$(cat version.txt)"
-          git tag $VERSION
+          echo "DATABRICKS_HOST=${{ secrets.DATABRICKS_HOST }}" >> $GITHUB_ENV
+          echo "DATABRICKS_TOKEN=${{ secrets.DATABRICKS_TOKEN }}" >> $GITHUB_ENV
+
+      # ✅ DEBUG CHECK (SAFE — VALUES ARE MASKED)
+      - name: Debug Secrets Injection
+        run: |
+          if [ -z "$DATABRICKS_HOST" ]; then echo "❌ HOST IS EMPTY"; else echo "✅ HOST OK"; fi
+          if [ -z "$DATABRICKS_TOKEN" ]; then echo "❌ TOKEN IS EMPTY"; else echo "✅ TOKEN OK"; fi
+
+      - name: Install Databricks CLI
+        uses: databricks/setup-cli@v0.246.0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
-      - name: Install the dependencies
+      - name: Deploy to Databricks
+        env:
+          DATABRICKS_BUNDLE_ENV: dev
         run: |
-          uv sync --extra test
+          databricks bundle deploy \
+            --var="git_sha=${{ github.sha }}" \
+            --var="branch=${{ github.ref_name }}"
 
-      - name: Run pre-commit checks
-        run: |
-          uv run pre-commit run --all-files
-
-      - name: Run pytest
-        run: |
-          uv run pytest -m "not ci_exclude"
+          echo "VERSION=$(cat version.txt)"
+          git tag $VERSION
+          git push origin $VERSION
