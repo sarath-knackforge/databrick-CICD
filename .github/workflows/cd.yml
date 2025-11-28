@@ -51,7 +51,7 @@ jobs:
 
       - name: Deploy to Databricks
         env:
-          DATABRICKS_BUNDLE_ENV: ${{ matrix.environment }}
+          DATABRICKS_BUNDLE_ENV: dev
         run: |
             databricks bundle deploy \
               --var="git_sha=${{ github.sha }}" \
