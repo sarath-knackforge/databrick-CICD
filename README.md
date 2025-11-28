@@ -1,1 +1,1 @@
-deploy cicd
+deploy cicd RECHECK
