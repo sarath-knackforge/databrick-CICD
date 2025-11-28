@@ -1,0 +1,18 @@
+{
+  "name": "model_approval_handler",
+  "function": {
+    "python_function": {
+      "source": "scripts/model_approval_handler.py",
+      "entry_point": "handler"
+    }
+  },
+  "compute": {
+    "policy_id": "serverless"
+  },
+  "permissions": [
+    {
+      "level": "CAN_VIEW",
+      "group_name": "users"
+    }
+  ]
+}
