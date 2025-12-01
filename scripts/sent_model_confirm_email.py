@@ -74,7 +74,7 @@ except Exception as e:
 
 # Create table in DEFAULT schema
 spark.sql("""
-CREATE TABLE IF NOT EXISTS default.model_approvals (
+CREATE TABLE IF NOT EXISTS mlops_dev.model_test.model_approvals (
   run_id STRING,
   model_name STRING,
   model_version STRING,
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS default.model_approvals (
 
 # Insert pending approval
 spark.sql(f"""
-INSERT INTO default.model_approvals
+INSERT INTO mlops_dev.model_test.model_approvals
 VALUES ('{registered_run_id}', '{model_name}', '{model_version}', 'PENDING', current_timestamp())
 """)
 
