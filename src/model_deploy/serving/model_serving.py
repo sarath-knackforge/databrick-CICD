@@ -8,6 +8,9 @@ from databricks.sdk.service.serving import (
 )
 
 
+from databricks.sdk.errors import ResourceAlreadyExists
+from databricks.sdk.service.serving import EndpointCoreConfigInput, ServedEntityInput
+
 class ModelServing:
     """Manages model serving in Databricks for Marvel characters."""
 
@@ -31,16 +34,46 @@ class ModelServing:
         print(f"Latest model version: {latest_version}")
         return latest_version
 
-    def deploy_or_update_serving_endpoint(
-        self, version: str = "latest", workload_size: str = "Small", scale_to_zero: bool = True
-    ) -> None:
-        """Deploy or update the model serving endpoint in Databricks for Marvel characters.
+    # def deploy_or_update_serving_endpoint(
+    #     self, version: str = "latest", workload_size: str = "Small", scale_to_zero: bool = True
+    # ) -> None:
+    #     """Deploy or update the model serving endpoint in Databricks for Marvel characters.
 
-        :param version: Model version to serve (default: "latest")
-        :param workload_size: Size of the serving workload (default: "Small")
-        :param scale_to_zero: Whether to enable scale-to-zero (default: True)
-        """
-        endpoint_exists = any(item.name == self.endpoint_name for item in self.workspace.serving_endpoints.list())
+    #     :param version: Model version to serve (default: "latest")
+    #     :param workload_size: Size of the serving workload (default: "Small")
+    #     :param scale_to_zero: Whether to enable scale-to-zero (default: True)
+    #     """
+    #     endpoint_exists = any(item.name == self.endpoint_name for item in self.workspace.serving_endpoints.list())
+    #     entity_version = self.get_latest_model_version() if version == "latest" else version
+
+    #     served_entities = [
+    #         ServedEntityInput(
+    #             entity_name=self.model_name,
+    #             scale_to_zero_enabled=scale_to_zero,
+    #             workload_size=workload_size,
+    #             entity_version=entity_version,
+    #         )
+    #     ]
+
+    #     if not endpoint_exists:
+    #         self.workspace.serving_endpoints.create(
+    #             name=self.endpoint_name,
+    #             config=EndpointCoreConfigInput(
+    #                 served_entities=served_entities,
+    #             ),
+    #         )
+    #     else:
+    #         self.workspace.serving_endpoints.update_config(name=self.endpoint_name, served_entities=served_entities)
+
+
+
+    def deploy_or_update_serving_endpoint(
+        self,
+        version: str = "latest",
+        workload_size: str = "Small",
+        scale_to_zero: bool = True,
+    ) -> None:
+
         entity_version = self.get_latest_model_version() if version == "latest" else version
 
         served_entities = [
@@ -52,12 +85,21 @@ class ModelServing:
             )
         ]
 
-        if not endpoint_exists:
+        try:
+            # ✅ SAFE CREATE (FIRST TIME)
             self.workspace.serving_endpoints.create(
                 name=self.endpoint_name,
-                config=EndpointCoreConfigInput(
-                    served_entities=served_entities,
-                ),
+                config=EndpointCoreConfigInput(served_entities=served_entities),
             )
-        else:
-            self.workspace.serving_endpoints.update_config(name=self.endpoint_name, served_entities=served_entities)
+            print(f"✅ Serving endpoint CREATED: {self.endpoint_name}")
+
+        except ResourceAlreadyExists:
+            # ✅ SAFE UPDATE (ALL REDEPLOYS)
+            print(f"⚠️ Serving endpoint EXISTS — updating: {self.endpoint_name}")
+
+            self.workspace.serving_endpoints.update_config(
+                name=self.endpoint_name,
+                served_entities=served_entities,
+            )
+
+            print(f"✅ Serving endpoint UPDATED: {self.endpoint_name}")
