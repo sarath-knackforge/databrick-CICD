@@ -38,7 +38,22 @@ print("🔥 experiment_run_id =", experiment_run_id)
 # ---------------------------------------------------------
 # 2. REGISTER MODEL FROM EXPERIMENT RUN
 # ---------------------------------------------------------
-model_name = "credit_risk_model"
+# ✅ Force Unity Catalog
+mlflow.set_registry_uri("databricks-uc")
+
+# ✅ Get the logged-in identity (user OR service principal)
+user_identity = dbutils.notebook.entry_point.getDbutils().notebook().getContext().userName().get()
+safe_user = user_identity.replace("@", "_").replace(".", "_").replace("-", "_")
+
+# ✅ Define catalog + dynamic schema per user
+CATALOG = "mlops_dev"
+SCHEMA = f"{safe_user}_model_test"    # ✅ unique per user
+MODEL_BASE = "credit_risk_model"
+
+# ✅ Fully qualified dynamic UC model name
+model_name = f"{CATALOG}.{SCHEMA}.{MODEL_BASE}"
+
+# model_name = "credit_risk_model"
 model_uri = f"runs:/{experiment_run_id}/model"
 
 mv = mlflow.register_model(model_uri, model_name)
