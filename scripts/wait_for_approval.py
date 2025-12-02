@@ -53,7 +53,6 @@ while True:
         time.sleep(10)
         continue
 
-    flag = str(rows["approved_flag"].iloc[0] or "").strip().upper()
     print(f"🔎 Found approval flag for {run_id}: {flag}")
 
     if flag == "TRUE":
