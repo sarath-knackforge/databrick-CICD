@@ -1,9 +1,13 @@
 from flask import Flask, request, jsonify
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import os
+import json
 
 app = Flask(__name__)
 
+google_creds_json = os.getenv("SERVICE_ACCOUNT_JSON")  # ✅ MATCHES RENDER
+print("✅ ENV VAR FOUND:", bool(os.getenv("SERVICE_ACCOUNT_JSON")))
 # ------------------------------------------------------
 # GOOGLE SHEETS API AUTHENTICATION
 # ------------------------------------------------------
@@ -12,9 +16,14 @@ SCOPE = [
     "https://www.googleapis.com/auth/drive"
 ]
 
+if not google_creds_json:
+    raise RuntimeError("❌ SERVICE_ACCOUNT_JSON env var is NOT set in Render")
+
+creds_dict = json.loads(google_creds_json)
+
 # Load your service account file (must be included in Render project)
-creds = ServiceAccountCredentials.from_json_keyfile_name(
-    "service_account.json", SCOPE
+creds = ServiceAccountCredentials.from_json_keyfile_dict(
+    creds_dict, SCOPE
 )
 
 client = gspread.authorize(creds)
