@@ -53,66 +53,66 @@ sheet = client.open_by_key(SHEET_ID).sheet1
 #     except Exception as e:
 #         return jsonify({"status": "ERROR", "error": str(e)}), 500
 
-from flask import Flask, request, jsonify
+# ------------------------------------------------------
+# APPROVAL ENDPOINT — FIXED
+# ------------------------------------------------------
+@app.get("/approve")
+def approve():
+    try:
+        run_id = request.args.get("run_id")
+        model_name = request.args.get("model_name")
+        model_version = request.args.get("model_version")
+        action = request.args.get("action", "APPROVE")  # ✅ default approve
 
-app = Flask(__name__)
+        if not run_id:
+            return jsonify({"error": "Missing run_id"}), 400
 
-@app.route("/approve", methods=["GET"])
-def approve_model():
+        # ✅ ✅ MAP ACTION → SHEET VALUE
+        if action == "APPROVE":
+            approved_flag = "TRUE"
+        elif action == "REJECT":
+            approved_flag = "FALSE"
+        else:
+            return jsonify({"error": "Invalid action"}), 400
 
-    run_id = request.args.get("run_id")
-    model_name = request.args.get("model_name")
-    model_version = request.args.get("model_version")
-    action = request.args.get("action", "APPROVE")  # default approve
+        # ✅ READ ALL ROWS
+        records = sheet.get_all_records()
 
-    if not run_id or not model_name or not model_version:
+        updated = False
+
+        # ✅ UPDATE EXISTING ROW IF FOUND
+        for idx, row in enumerate(records, start=2):  # row 1 is header
+            if (
+                str(row["run_id"]) == str(run_id)
+                and str(row["model_name"]) == str(model_name)
+                and str(row["model_version"]) == str(model_version)
+            ):
+                sheet.update_cell(idx, 4, approved_flag)  # ✅ Column D = approved_flag
+                updated = True
+                break
+
+        # ✅ IF NOT FOUND → APPEND NEW ROW
+        if not updated:
+            sheet.append_row([
+                run_id,
+                model_name,
+                model_version,
+                approved_flag
+            ])
+
         return jsonify({
-            "status": "error",
-            "message": "Missing required parameters"
-        }), 400
-
-    if action == "APPROVE":
-        print("✅ MODEL APPROVED")
-        print("Run ID:", run_id)
-        print("Model Name:", model_name)
-        print("Model Version:", model_version)
-
-        # ✅ TODO: Promote model to Production using MLflow
-        # mlflow_client.transition_model_version_stage(...)
-
-        return jsonify({
-            "status": "success",
-            "action": "APPROVED",
+            "status": "SUCCESS",
+            "message": "Approval updated in Google Sheet",
+            "action": action,
+            "approved_flag": approved_flag,
             "run_id": run_id,
             "model_name": model_name,
             "model_version": model_version
         })
 
-    elif action == "REJECT":
-        print("❌ MODEL REJECTED")
-        print("Run ID:", run_id)
-        print("Model Name:", model_name)
-        print("Model Version:", model_version)
+    except Exception as e:
+        return jsonify({"status": "ERROR", "error": str(e)}), 500
 
-        # ✅ TODO: Log rejection reason / audit trail
-
-        return jsonify({
-            "status": "success",
-            "action": "REJECTED",
-            "run_id": run_id,
-            "model_name": model_name,
-            "model_version": model_version
-        })
-
-    else:
-        return jsonify({
-            "status": "error",
-            "message": "Invalid action"
-        }), 400
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000)
 
 
 # ------------------------------------------------------

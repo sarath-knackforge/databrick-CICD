@@ -157,29 +157,16 @@ html = f"""
 
 <div style="margin-top:20px;">
 
-    <!-- APPROVE BUTTON -->
     <a href="{approve_url}" style="text-decoration:none;">
-        <button style="
-            background-color:green;
-            color:white;
-            padding:10px 20px;
-            border:none;
-            border-radius:6px;
-            font-size:16px;
-            margin-right:10px;">
+        <button style="background-color:green;color:white;padding:10px 20px;
+                       border:none;border-radius:6px;font-size:16px;margin-right:10px;">
             APPROVE
         </button>
     </a>
 
-    <!-- CANCEL / REJECT BUTTON -->
     <a href="{reject_url}" style="text-decoration:none;">
-        <button style="
-            background-color:red;
-            color:white;
-            padding:10px 20px;
-            border:none;
-            border-radius:6px;
-            font-size:16px;">
+        <button style="background-color:red;color:white;padding:10px 20px;
+                       border:none;border-radius:6px;font-size:16px;">
             CANCEL
         </button>
     </a>

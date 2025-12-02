@@ -46,13 +46,14 @@ while True:
 
     # Match run_id row
     rows = df[df["run_id"].astype(str) == str(run_id)]
+    flag = str(rows.iloc[-1]["approved_flag"]).strip().upper() 
 
     if rows.empty:
         print(f"⏳ run_id {run_id} not found yet... waiting...")
         time.sleep(10)
         continue
 
-    flag = str(rows["approved_flag"].iloc[0]).strip().upper()
+    flag = str(rows["approved_flag"].iloc[0] or "").strip().upper()
     print(f"🔎 Found approval flag for {run_id}: {flag}")
 
     if flag == "TRUE":
