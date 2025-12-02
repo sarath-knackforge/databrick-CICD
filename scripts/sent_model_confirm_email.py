@@ -93,13 +93,28 @@ VALUES ('{registered_run_id}', '{model_name}', '{model_version}', 'PENDING', cur
 # ---------------------------------------------------------
 # 4. CREATE APPROVAL URL (FULLY DYNAMIC)
 # ---------------------------------------------------------
-approval_url = (
+# approval_url = (
+#     f"https://databricks-approval-backend.onrender.com/approve"
+#     f"?run_id={registered_run_id}"
+#     f"&model_name={model_name}"
+#     f"&model_version={model_version}"
+# )
+
+approve_url = (
     f"https://databricks-approval-backend.onrender.com/approve"
     f"?run_id={registered_run_id}"
     f"&model_name={model_name}"
     f"&model_version={model_version}"
+    f"&action=APPROVE"
 )
 
+reject_url = (
+    f"https://databricks-approval-backend.onrender.com/approve"
+    f"?run_id={registered_run_id}"
+    f"&model_name={model_name}"
+    f"&model_version={model_version}"
+    f"&action=REJECT"
+)
 
 
 
@@ -131,7 +146,6 @@ msg["To"] = receiver_email
 # </body>
 # </html>
 # """
-
 html = f"""
 <html>
 <body>
@@ -141,34 +155,32 @@ html = f"""
 <p><b>Version:</b> {model_version}</p>
 <p><b>Run ID:</b> {registered_run_id}</p>
 
-<!-- Approve & Reject Buttons -->
 <div style="margin-top:20px;">
 
     <!-- APPROVE BUTTON -->
-    <a href="https://databricks-approval-backend.onrender.com/approve
-        ?run_id={registered_run_id}
-        &model_name={model_name}
-        &model_version={model_version}
-        &action=APPROVE"
-       style="text-decoration:none;">
-        <button style="background-color:green;color:white;
-                       padding:10px 20px;border:none;
-                       border-radius:6px;font-size:16px;margin-right:10px;">
+    <a href="{approve_url}" style="text-decoration:none;">
+        <button style="
+            background-color:green;
+            color:white;
+            padding:10px 20px;
+            border:none;
+            border-radius:6px;
+            font-size:16px;
+            margin-right:10px;">
             APPROVE
         </button>
     </a>
 
-    <!-- REJECT BUTTON -->
-    <a href="https://databricks-approval-backend.onrender.com/approve
-        ?run_id={registered_run_id}
-        &model_name={model_name}
-        &model_version={model_version}
-        &action=REJECT"
-       style="text-decoration:none;">
-        <button style="background-color:red;color:white;
-                       padding:10px 20px;border:none;
-                       border-radius:6px;font-size:16px;">
-            REJECT
+    <!-- CANCEL / REJECT BUTTON -->
+    <a href="{reject_url}" style="text-decoration:none;">
+        <button style="
+            background-color:red;
+            color:white;
+            padding:10px 20px;
+            border:none;
+            border-radius:6px;
+            font-size:16px;">
+            CANCEL
         </button>
     </a>
 
