@@ -115,22 +115,69 @@ msg["Subject"] = f"Approval Needed: {model_name} v{model_version}"
 msg["From"] = sender_email
 msg["To"] = receiver_email
 
+# html = f"""
+# <html>
+# <body>
+# <h3>New Model Ready for Deployment</h3>
+# <p><b>Model:</b> {model_name}</p>
+# <p><b>Version:</b> {model_version}</p>
+# <p><b>Run ID:</b> {registered_run_id}</p>
+
+# <a href="{approval_url}">
+# <button style="background-color:green;color:white;padding:10px 20px;border:none;border-radius:6px;font-size:16px;">
+# Approve Model Deployment
+# </button>
+# </a>
+# </body>
+# </html>
+# """
+
 html = f"""
 <html>
 <body>
 <h3>New Model Ready for Deployment</h3>
+
 <p><b>Model:</b> {model_name}</p>
 <p><b>Version:</b> {model_version}</p>
 <p><b>Run ID:</b> {registered_run_id}</p>
 
-<a href="{approval_url}">
-<button style="background-color:green;color:white;padding:10px 20px;border:none;border-radius:6px;font-size:16px;">
-Approve Model Deployment
-</button>
-</a>
+<!-- Approve & Reject Buttons -->
+<div style="margin-top:20px;">
+
+    <!-- APPROVE BUTTON -->
+    <a href="https://databricks-approval-backend.onrender.com/approve
+        ?run_id={registered_run_id}
+        &model_name={model_name}
+        &model_version={model_version}
+        &action=APPROVE"
+       style="text-decoration:none;">
+        <button style="background-color:green;color:white;
+                       padding:10px 20px;border:none;
+                       border-radius:6px;font-size:16px;margin-right:10px;">
+            APPROVE
+        </button>
+    </a>
+
+    <!-- REJECT BUTTON -->
+    <a href="https://databricks-approval-backend.onrender.com/approve
+        ?run_id={registered_run_id}
+        &model_name={model_name}
+        &model_version={model_version}
+        &action=REJECT"
+       style="text-decoration:none;">
+        <button style="background-color:red;color:white;
+                       padding:10px 20px;border:none;
+                       border-radius:6px;font-size:16px;">
+            REJECT
+        </button>
+    </a>
+
+</div>
+
 </body>
 </html>
 """
+
 
 msg.attach(MIMEText(html, "html"))
 
